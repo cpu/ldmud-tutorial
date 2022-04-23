@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+#
+# Certbot LDMud Deploy Hook
+# Paradox@Dune - 2021-03-07
+#
+# Roughly based on
+# https://github.com/greenhost/certbot-haproxy/blob/develop/certbot-deploy-hook-example 
+
+import os
+import re
+import sys
+import shutil
+
+from datetime import date
+
+# Certbot sets an environment variable RENEWED_LINEAGE, which points to the
+# path of the renewed certificate. We use that path to determine and find
+# the files for the currently renewed certificated
+lineage=os.environ.get('RENEWED_LINEAGE')
+
+# If nothing renewed, exit
+if not lineage:
+    sys.exit()
+
+# From the linage, we strip the 'domain name', which is the last part
+# of the path.
+result = re.match(r'.*/live/(.+)$', lineage)
+
+# If we can not recognize the path, we exit with 1
+if not result:
+    sys.exit(1)
+
+# Extract the domain name
+domain = result.group(1)
+
+# Configuration
+# TODO(@Paradox): Support multiple MUDs (e.g. Dune + DevDune)
+mud_home = "/home/dune/devdune"
+mud_user = "dune"
+certs_path = f"{mud_home}/tls"
+
+cert_path = f"{certs_path}/{domain}.crt"
+issuer_path = f"{certs_path}/{domain}.issuer.crt"
+key_path = f"{certs_path}/{domain}.key"
+timestamp_path = f"{certs_path}/last_updated.txt"
+
+# The source files can be found in below paths, constructed with the lineage
+# path.
+source_cert = f"{lineage}/fullchain.pem"
+source_issuer = f"{lineage}/chain.pem"
+source_key = f"{lineage}/privkey.pem"
+
+# Copy files, chown to mud user.
+shutil.copyfile(source_cert, cert_path)
+shutil.chown(cert_path, mud_user)
+shutil.copyfile(source_issuer, issuer_path)
+shutil.chown(issuer_path, mud_user)
+shutil.copyfile(source_key, key_path) 
+shutil.chown(key_path, mud_user)
+
+# Also write a timestamp file so we can easily tell when the hook last ran.
+with open(timestamp_path, "wt") as ts_file:
+  ts_file.write(f"{date.today()}\n")
+shutil.chown(timestamp_path,  mud_user)
+
+# All done! Note we don't restart LD here. That would disconnect players!
+# Instead there is a daemon in-lib that calls tls_refresh_certs(); every
+# day or so to always have fresh certs.

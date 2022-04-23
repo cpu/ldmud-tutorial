@@ -1,0 +1,16 @@
+[Unit]
+Description = LDMUD Game
+After = network-online.target
+
+[Service]
+Type = simple
+User = mud
+Group = mud
+WorkingDirectory = /home/mud/game/lib
+ExecStart = /home/mud/game/start.sh
+Restart=always
+RestartSec=3
+OOMScoreAdjust=-900
+
+[Install]
+WantedBy = multi-user.target
