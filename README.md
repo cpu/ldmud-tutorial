@@ -61,15 +61,12 @@ Roughly the setup process will involve:
 
 There are only two things we'll need that aren't installable via `apt-get`:
 
-* A [fork of LDMud][cpu-ldmud] with [a tweak][tls-port-commit] to the `lp-245`
-  lib to support a TLS port (_TODO: Upstream this!_).
 * A custom [deploy hook][ldmud-deploy-hook] Certbot can use to install
   certificates for our LDMud game.
 
 Let's get started!
 
-[cpu-ldmud]: https://github.com/cpu/ldmud/tree/cpu-lp245-tls-eg-wip
-[tls-port-commit]: https://github.com/cpu/ldmud/commit/7686ab3975f6932cdaf003c4106049ed82cd6966
+[tls-port-commit]: https://github.com/ldmud/ldmud/commit/64b3588a13fb0c761da62d6deb56dfa380b03c6f
 [ldmud-deploy-hook]: https://gist.github.com/cpu/bec1601816db34bb8c9efeb3f78b37c5
 
 ## Create Digital Ocean Droplet
@@ -218,20 +215,17 @@ user we created and **not `root`**.
   ```bash
   mkdir game/python
   ```
-* Clone the game driver/lib. We're using [a fork][cpu-ldmud] for now to get the
-  TLS port lp-245 support that isn't in the main repo yet:
+* Clone the game driver/lib.
   ```bash
-  git clone https://github.com/cpu/ldmud.git
+  git clone https://github.com/ldmud/ldmud.git
   ```
 * Make a symlink in the game directory to the lp-245 lib in the driver source:
   ```bash
   ln -s /home/mud/ldmud/mud/lp-245/ /home/mud/game/lib
   ```
-* Change into the driver directory and switch to [the branch][cpu-ldmud] that
-  has the lp-245 TLS port support:
+* Change into the driver directory:
   ```bash
   cd ldmud
-  git checkout cpu-lp245-tls-eg-wip
   ```
 * Change into the driver source directory and install the driver with TLS and Python
   support, with the prefix set to the game directory we made in the `mud` user's
@@ -306,8 +300,8 @@ The startup script in `/home/mud/game/start.sh` does a few important things:
   port 4242 and port 4141.
 
 If you're curious, you can look at [this commit][tls-port-commit] to see the
-minimal changes our LDMud fork made to the lp-245 lib's `obj/master.c` and
-`obj/player.c` to support a dedicated TLS port. In short:
+minimal changes made to the lp-245 lib's `obj/master.c` and `obj/player.c` to
+support a dedicated TLS port. In short:
 
 * We update `connect()` in `obj/master.c` to check if the user connected to the
   TLS port, and if so, to init the connection and call a `tls_init` callback in
