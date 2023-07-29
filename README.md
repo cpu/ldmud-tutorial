@@ -59,14 +59,13 @@ Roughly the setup process will involve:
 8. [Setting up a systemd Service, starting the MUD.](#setup-systemd-service-start-mud)
 9. [Connecting to the MUD.](#test-connection)
 
-There are only two things we'll need that aren't installable via `apt-get`:
+There's only one thing we'll need that isn't installable via `apt-get`:
 
 * A custom [deploy hook][ldmud-deploy-hook] Certbot can use to install
   certificates for our LDMud game.
 
 Let's get started!
 
-[tls-port-commit]: https://github.com/ldmud/ldmud/commit/64b3588a13fb0c761da62d6deb56dfa380b03c6f
 [ldmud-deploy-hook]: https://gist.github.com/cpu/bec1601816db34bb8c9efeb3f78b37c5
 
 ## Create Digital Ocean Droplet
@@ -311,6 +310,8 @@ support a dedicated TLS port. In short:
   process. We also add a simple `tls` action command.
 * We also _move_ a `write()` that was in `connect()` in `master.c` to the
   `logon()` in `player.c` - we don't want to write output while setting up TLS!
+
+[tls-port-commit]: https://github.com/ldmud/ldmud/commit/64b3588a13fb0c761da62d6deb56dfa380b03c6f
 
 ## Setup LDMud Python
 
